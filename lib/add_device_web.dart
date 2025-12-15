@@ -7,7 +7,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:typed_data';
 import 'dart:html' as html;
-
 class AddDeviceWeb extends StatefulWidget {
   const AddDeviceWeb({super.key});
 
@@ -173,17 +172,53 @@ class _AddDeviceWebState extends State<AddDeviceWeb> {
             child: pw.Column(
               mainAxisAlignment: pw.MainAxisAlignment.center,
               children: [
-                pw.Text('RAYAN COMPUTERS', style: pw.TextStyle(fontSize: 36, )),
+                pw.Text(
+                  'RAYAN COMPUTERS',
+                  style: pw.TextStyle(fontSize: 36),
+                ),
                 pw.SizedBox(height: 30),
-                pw.Text('Device Received', style: pw.TextStyle(fontSize: 28)),
-                pw.SizedBox(height: 60),
-                pw.Text('TICKET ID', style: pw.TextStyle(fontSize: 24)),
+
+                pw.Text(
+                  'Device Received',
+                  style: pw.TextStyle(fontSize: 28),
+                ),
                 pw.SizedBox(height: 20),
-                pw.Text(ticketId, style: pw.TextStyle(fontSize: 72, fontWeight: pw.FontWeight.bold)),
+
+                pw.Text(
+                  'Device: $_device',
+                  style: pw.TextStyle(fontSize: 32),
+                ),
+
                 pw.SizedBox(height: 60),
-                pw.Text('Phone Number: $phone', style: pw.TextStyle(fontSize: 32)),
+
+                pw.Text(
+                  'TICKET ID',
+                  style: pw.TextStyle(fontSize: 24),
+                ),
+                pw.SizedBox(height: 20),
+
+                pw.Text(
+                  ticketId,
+                  style: pw.TextStyle(
+                    fontSize: 72,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+
                 pw.SizedBox(height: 60),
-                pw.Text('Please keep this ticket ID safe', style: pw.TextStyle(fontSize: 22)),
+
+                pw.Text(
+                  'Phone Number: $phone',
+                  style: pw.TextStyle(fontSize: 32),
+                ),
+
+                pw.SizedBox(height: 60),
+
+                pw.Text(
+                  'Please keep this ticket ID safe',
+                  style: pw.TextStyle(fontSize: 22),
+                ),
+
               ],
             ),
           );
