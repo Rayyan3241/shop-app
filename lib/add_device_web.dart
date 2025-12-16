@@ -46,12 +46,11 @@ class _AddDeviceWebState extends State<AddDeviceWeb> {
       await FirebaseFirestore.instance.collection('repairs').add({
         'ticketId': ticketId,
         'customerName': _customerName.text.trim(),
-        'phone': _phone.text.trim(),
+        'phone': '+968${_phone.text.trim()}', // <--- prepend +968 here
         'device': _device.text.trim(),
         'problem': _problem.text.trim(),
         'expectedCost': int.tryParse(_expectedCost.text) ?? 0,
         'advance': int.tryParse(_advance.text) ?? 0,
-        'note': _note.text.trim(),
         'status': 'Received',
         'dateAdded': FieldValue.serverTimestamp(),
       });
@@ -90,7 +89,7 @@ class _AddDeviceWebState extends State<AddDeviceWeb> {
               Text('Device Received Successfully', style: TextStyle(fontSize: 22, color: Colors.grey[700])),
               const SizedBox(height: 50),
 
-              Text('YOUR TICKET ID', style: TextStyle(fontSize: 20, color: Colors.grey[600], letterSpacing: 2)),
+              Text('YOUR Tracking ID', style: TextStyle(fontSize: 20, color: Colors.grey[600], letterSpacing: 2)),
               const SizedBox(height: 20),
               Text(ticketId, style: GoogleFonts.poppins(fontSize: 64, fontWeight: FontWeight.bold, color: Colors.black)),
               const SizedBox(height: 50),
@@ -110,8 +109,8 @@ class _AddDeviceWebState extends State<AddDeviceWeb> {
                 children: [
                   ElevatedButton.icon(
                     onPressed: () => _printReceipt(ticketId, phone),
-                    icon: const Icon(Icons.print, size: 28),
-                    label: const Text('Print Receipt', style: TextStyle(fontSize: 18)),
+                    icon: const Icon(Icons.print, size: 28, color: Colors.white,),
+                    label: const Text('Print Receipt', style: TextStyle(fontSize: 18,color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
@@ -120,8 +119,8 @@ class _AddDeviceWebState extends State<AddDeviceWeb> {
                   ),
                   ElevatedButton.icon(
                     onPressed: () => _downloadPdf(ticketId, phone),
-                    icon: const Icon(Icons.download, size: 28),
-                    label: const Text('Download PDF', style: TextStyle(fontSize: 18)),
+                    icon: const Icon(Icons.download, size: 28, color: Colors.white,),
+                    label: const Text('Download PDF', style: TextStyle(fontSize: 18, color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
@@ -178,21 +177,18 @@ class _AddDeviceWebState extends State<AddDeviceWeb> {
                 ),
                 pw.SizedBox(height: 30),
 
+                pw.Text('+968 99636476', style: pw.TextStyle(fontSize: 28)),
+                pw.SizedBox(height: 5),
+                pw.Text('+968 96008824', style: pw.TextStyle(fontSize: 28)),
+                pw.SizedBox(height: 20),
+
                 pw.Text(
                   'Device Received',
                   style: pw.TextStyle(fontSize: 28),
                 ),
-                pw.SizedBox(height: 20),
-
-                pw.Text(
-                  'Device: $_device',
-                  style: pw.TextStyle(fontSize: 32),
-                ),
-
                 pw.SizedBox(height: 60),
-
                 pw.Text(
-                  'TICKET ID',
+                  'Tracking ID',
                   style: pw.TextStyle(fontSize: 24),
                 ),
                 pw.SizedBox(height: 20),
@@ -267,8 +263,6 @@ class _AddDeviceWebState extends State<AddDeviceWeb> {
                 ),
                 const SizedBox(height: 20),
 
-                _inputField('Technician Note (Optional)', _note, maxLines: 4),
-                const SizedBox(height: 60),
 
                 SizedBox(
                   width: double.infinity,

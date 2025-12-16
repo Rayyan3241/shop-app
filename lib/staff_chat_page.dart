@@ -1,4 +1,3 @@
-// lib/staff_chat_page.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -37,6 +36,7 @@ class _StaffChatPageState extends State<StaffChatPage> {
     String text = _msg.text.trim();
     _msg.clear();
 
+    // Add message to messages subcollection
     await FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
@@ -44,9 +44,12 @@ class _StaffChatPageState extends State<StaffChatPage> {
         .add({
       'text': text,
       'sender': 'staff',
+      'fromStaff': true,           // mark as from staff
+      'readByCustomer': false,     // customer hasn't read
       'time': Timestamp.now(),
     });
 
+    // Update chat-level document
     await FirebaseFirestore.instance.collection('chats').doc(chatId).set({
       'ticketId': widget.ticketId,
       'phone': widget.phone,
@@ -54,6 +57,7 @@ class _StaffChatPageState extends State<StaffChatPage> {
       'lastMessage': text,
       'lastTime': Timestamp.now(),
       'sender': 'staff',
+      'unreadForCustomer': true,   // triggers yellow dot on customer portal
     }, SetOptions(merge: true));
 
     // Scroll to bottom
@@ -136,32 +140,48 @@ class _StaffChatPageState extends State<StaffChatPage> {
                     bool isStaff = data['sender'] == 'staff';
                     String text = data['text'] ?? '';
                     Timestamp? time = data['time'];
-                    String timeStr = time != null ? DateFormat('hh:mm a').format(time.toDate()) : '';
+                    String timeStr = time != null
+                        ? DateFormat('hh:mm a').format(time.toDate())
+                        : '';
 
                     return Align(
-                      alignment: isStaff ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment:
+                      isStaff ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 12),
                         decoration: BoxDecoration(
                           color: isStaff ? Colors.black : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
-                            BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2)),
+                            BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2)),
                           ],
                         ),
-                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                        constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.75),
                         child: Column(
-                          crossAxisAlignment: isStaff ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          crossAxisAlignment: isStaff
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
                           children: [
                             Text(
                               text,
-                              style: TextStyle(color: isStaff ? Colors.white : Colors.black87, fontSize: 16.5),
+                              style: TextStyle(
+                                  color: isStaff ? Colors.white : Colors.black87,
+                                  fontSize: 16.5),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               timeStr,
-                              style: TextStyle(color: isStaff ? Colors.white70 : Colors.grey[600], fontSize: 11),
+                              style: TextStyle(
+                                  color: isStaff
+                                      ? Colors.white70
+                                      : Colors.grey[600],
+                                  fontSize: 11),
                             ),
                           ],
                         ),
@@ -173,7 +193,7 @@ class _StaffChatPageState extends State<StaffChatPage> {
             ),
           ),
 
-          // INPUT BAR — SAME AS MOBILE
+          // INPUT BAR
           Container(
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 20),
             decoration: const BoxDecoration(
@@ -221,7 +241,8 @@ class _StaffChatPageState extends State<StaffChatPage> {
                       color: Colors.black,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.send, color: Colors.white, size: 22),
+                    child:
+                    const Icon(Icons.send, color: Colors.white, size: 22),
                   ),
                 )
               ],
