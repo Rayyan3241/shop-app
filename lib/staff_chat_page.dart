@@ -80,7 +80,9 @@ class _StaffChatPageState extends State<StaffChatPage> {
 
     final now = Timestamp.now();
 
-    // Add message to messages subcollection
+    // NOTE: if you also allow swipe‑reply on staff side,
+    // you would add replyToText / replyToSender here as well.
+
     await FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
@@ -90,11 +92,12 @@ class _StaffChatPageState extends State<StaffChatPage> {
       'sender': 'staff',
       'fromStaff': true,
       'readByCustomer': false,
-      'readByStaff': true, // staff has read own message
+      'readByStaff': true,
       'time': now,
+      // 'replyToText': ...,    // <-- add later if you implement staff reply
+      // 'replyToSender': ...,  // <-- add later if you implement staff reply
     });
 
-    // Update chat-level document
     await FirebaseFirestore.instance.collection('chats').doc(chatId).set({
       'ticketId': widget.ticketId,
       'phone': widget.phone,
@@ -171,9 +174,7 @@ class _StaffChatPageState extends State<StaffChatPage> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 var messages = snapshot.data!.docs;
@@ -185,12 +186,19 @@ class _StaffChatPageState extends State<StaffChatPage> {
                   itemBuilder: (context, index) {
                     var data =
                     messages[index].data() as Map<String, dynamic>;
+
                     bool isStaff = data['sender'] == 'staff';
                     String text = data['text'] ?? '';
                     Timestamp? time = data['time'];
                     String timeStr = time != null
                         ? DateFormat('h:mm a').format(time.toDate())
                         : '';
+
+                    // 👇 reply info from customer side (if this message is a reply)
+                    final String replyToText =
+                    (data['replyToText'] ?? '') as String;
+                    final String replyToSender =
+                    (data['replyToSender'] ?? '') as String;
 
                     return Align(
                       alignment: isStaff
@@ -223,6 +231,58 @@ class _StaffChatPageState extends State<StaffChatPage> {
                               ? CrossAxisAlignment.end
                               : CrossAxisAlignment.start,
                           children: [
+                            // 👇 replied customer message (only if exists)
+                            if (replyToText.isNotEmpty)
+                              Container(
+                                margin:
+                                const EdgeInsets.only(bottom: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isStaff
+                                      ? Colors.white.withOpacity(0.08)
+                                      : Colors.grey.shade200,
+                                  borderRadius:
+                                  BorderRadius.circular(8),
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.blueGrey.shade300,
+                                      width: 3,
+                                    ),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    if (replyToSender.isNotEmpty)
+                                      Text(
+                                        replyToSender,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: isStaff
+                                              ? Colors.white
+                                              : Colors.black87,
+                                        ),
+                                      ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      replyToText,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: isStaff
+                                            ? Colors.white70
+                                            : Colors.grey[700],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                            // main message
                             Text(
                               text,
                               style: TextStyle(
