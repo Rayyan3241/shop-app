@@ -28,7 +28,7 @@ class _StaffChatPageState extends State<StaffChatPage> {
   void initState() {
     super.initState();
     chatId = _computeChatId();
-    _markCustomerMessagesAsRead(); // 👈 mark as read when opened
+    _markCustomerMessagesAsRead();
   }
 
   @override
@@ -64,7 +64,6 @@ class _StaffChatPageState extends State<StaffChatPage> {
 
     await batch.commit();
 
-    // Also clear unread flag at chat level for staff-view
     await FirebaseFirestore.instance.collection('chats').doc(chatId).set(
       {
         'unreadForStaff': false,
@@ -91,7 +90,7 @@ class _StaffChatPageState extends State<StaffChatPage> {
       'sender': 'staff',
       'fromStaff': true,
       'readByCustomer': false,
-      'readByStaff': true, // staff has obviously "read" own message
+      'readByStaff': true, // staff has read own message
       'time': now,
     });
 
@@ -106,7 +105,6 @@ class _StaffChatPageState extends State<StaffChatPage> {
       'unreadForCustomer': true,
     }, SetOptions(merge: true));
 
-    // Scroll to bottom
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -173,7 +171,9 @@ class _StaffChatPageState extends State<StaffChatPage> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
 
                 var messages = snapshot.data!.docs;
@@ -207,9 +207,11 @@ class _StaffChatPageState extends State<StaffChatPage> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2)),
+                              color:
+                              Colors.grey.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
                           ],
                         ),
                         constraints: BoxConstraints(
