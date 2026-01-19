@@ -110,7 +110,6 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
-      // Save login to localStorage
       html.window.localStorage['username'] = username;
 
       if (mounted) {
@@ -148,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               Text('Get Started', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 30),
-              Text('Enter Your username and password', style: GoogleFonts.poppins(fontSize: 14, )),
+              Text('Enter Your username and password', style: GoogleFonts.poppins(fontSize: 14)),
               const SizedBox(height: 10),
               TextField(
                 controller: _usernameController,
@@ -238,32 +237,82 @@ class _StaffDashboardState extends State<StaffDashboard> {
     }
   }
 
+  // SMALLER UNREAD BADGE - positioned nicely on the right
+  Widget _unreadBadge() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('chats')
+          .where('unreadForStaff', isEqualTo: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final int count = snapshot.data!.docs.length;
+
+        return Container(
+          padding: const EdgeInsets.all(4),
+          decoration:  BoxDecoration(
+            color: Colors.blueGrey.shade900,
+            shape: BoxShape.circle,
+          ),
+          constraints: const BoxConstraints(
+            minWidth: 20,
+            minHeight: 20,
+          ),
+          child: Center(
+            child: Text(
+              count > 99 ? '99+' : '$count',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isDesktop = MediaQuery.of(context).size.width > 1100;
 
     return Scaffold(
-      appBar: isDesktop ? null : AppBar(backgroundColor: Colors.black, title: Text(_titles[_selectedIndex]), foregroundColor: Colors.white),
+      appBar: isDesktop ? null : AppBar(backgroundColor: Colors.white, title: Text(_titles[_selectedIndex]), foregroundColor: Colors.white),
       body: Row(
         children: [
           if (isDesktop)
             Container(
               width: 280,
-              color: Colors.black,
+              color: Colors.white,
               child: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        const Icon(Icons.computer, color: Colors.white, size: 50),
-                        const SizedBox(height: 12),
-                        Text('Rayan Computers', style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                        Text('Staff Portal', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                        Row(
+                          children: [
+                            Icon(Icons.computer, color: Colors.blueGrey.shade900, size: 50),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text('Rayan Computers', style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blueGrey.shade900)),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text('Staff Portal', style: TextStyle(color: Colors.blueGrey.shade900, fontSize: 14)),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  const Divider(color: Colors.white24),
+                  Divider(color: Colors.grey.shade300),
                   Expanded(
                     child: ListView.builder(
                       itemCount: _titles.length,
@@ -305,25 +354,54 @@ class _StaffDashboardState extends State<StaffDashboard> {
         currentIndex: _selectedIndex,
         onTap: (i) => setState(() => _selectedIndex = i),
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
+        backgroundColor: Colors.blueGrey.shade900,
+        selectedItemColor: Colors.blueGrey.shade900,
+        unselectedItemColor: Colors.blueGrey.shade900,
         items: _titles.map((title) => BottomNavigationBarItem(icon: Icon(_getIcon(_titles.indexOf(title))), label: title)).toList(),
       ),
     );
   }
 
   IconData _getIcon(int index) {
-    final icons = [Icons.dashboard, Icons.add_box, Icons.edit_note, Icons.list_alt, Icons.chat, Icons.person_add, Icons.account_circle,];
+    final icons = [
+      Icons.dashboard,
+      Icons.add_box,
+      Icons.edit_note,
+      Icons.list_alt,
+      Icons.chat,
+      Icons.person_add,
+      Icons.account_circle,
+    ];
     return icons[index];
   }
 
   Widget _navItem(String title, IconData icon, int index) {
     bool selected = _selectedIndex == index;
+    bool isChatItem = title == 'Customer Chats';
 
     return ListTile(
-      leading: Icon(icon, color: selected ? Colors.white : Colors.white70),
-      title: Text(title, style: TextStyle(color: selected ? Colors.white : Colors.white70, fontWeight: selected ? FontWeight.bold : FontWeight.normal)),
+      leading: Icon(
+        icon,
+        color: selected ? Colors.blueGrey.shade900 : Colors.blueGrey.shade100,
+      ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: selected ? Colors.blueGrey.shade900 : Colors.blueGrey.shade900,
+                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
+          if (isChatItem)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: _unreadBadge(),
+            ),
+        ],
+      ),
       selected: selected,
       selectedTileColor: Colors.white10,
       onTap: () => setState(() => _selectedIndex = index),
@@ -331,7 +409,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
   }
 }
 
-// Account Page (change password)
+// Account Page remains exactly the same
 class AccountPage extends StatefulWidget {
   final String currentUser;
 

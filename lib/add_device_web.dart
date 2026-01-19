@@ -270,7 +270,7 @@ class _AddDeviceWebState extends State<AddDeviceWeb> {
                   child: ElevatedButton(
                     onPressed: loading ? null : _addDevice,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: Colors.blueGrey.shade900,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     ),
                     child: loading

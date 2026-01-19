@@ -125,7 +125,7 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              labelText: 'Search by Ticket ID, Name, Phone, or Device',
+              labelText: 'Search',
               filled: true,
               fillColor: Colors.white,
               prefixIcon: const Icon(Icons.search),
@@ -138,7 +138,7 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
           // LIVE SEARCH RESULTS LIST
           if (searchQuery.isNotEmpty || repairDoc == null)
             Container(
-              constraints: const BoxConstraints(maxHeight: 500),
+              constraints: const BoxConstraints(maxHeight: 800),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -171,7 +171,7 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
                   if (filteredDocs.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.all(32),
-                      child: Text('No devices found', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                      child: Text('No devices found', style: TextStyle(fontSize: 18, color: Colors.white)),
                     );
                   }
 
@@ -192,8 +192,8 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
                         title: Text('${data['ticketId']} - ${data['customerName']}'),
                         subtitle: Text('${data['device']} • ${data['phone']}'),
                         trailing: Chip(
-                          label: Text(data['status'] ?? 'Received'),
-                          backgroundColor: Colors.blue[100],
+                          label: Text(data['status'] ?? 'Received', style: TextStyle(color: Colors.white),),
+                          backgroundColor: Colors.blueGrey.shade900,
                         ),
                         onTap: () => _selectRepair(doc),
                       );
@@ -217,10 +217,10 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Ticket: ${repairDoc!['ticketId']}', style: GoogleFonts.poppins(fontSize: 28)),
-                  Text('Customer: ${repairDoc!['customerName']}', style: const TextStyle(fontSize: 20)),
-                  Text('Device: ${repairDoc!['device']}', style: const TextStyle(fontSize: 20)),
-                  Text('Phone: ${repairDoc!['phone']}', style: const TextStyle(fontSize: 18)),
+                  Text('Ticket:    ${repairDoc!['ticketId']}', style: GoogleFonts.poppins(fontSize: 28)),
+                  Text('Customer:   ${repairDoc!['customerName']}', style: const TextStyle(fontSize: 20)),
+                  Text('Device:        ${repairDoc!['device']}', style: const TextStyle(fontSize: 20)),
+                  Text('Phone:           ${repairDoc!['phone']}', style: const TextStyle(fontSize: 18)),
                   const SizedBox(height: 30),
 
                   DropdownButtonFormField<String>(
@@ -228,6 +228,7 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
                     decoration: InputDecoration(labelText: 'Status', filled: true, fillColor: Colors.grey[100]),
                     items: statuses.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                     onChanged: (v) => setState(() => selectedStatus = v),
+                    dropdownColor: Colors.white,
                   ),
                   const SizedBox(height: 20),
 
@@ -236,7 +237,7 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
                       Expanded(
                         child: TextField(
                           controller: _costController,
-                          decoration: InputDecoration(labelText: 'Expected Cost (OMR)', filled: true),
+                          decoration: InputDecoration(labelText: 'Expected Cost (OMR)', filled: true, fillColor: Colors.grey[100]),
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -244,7 +245,7 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
                       Expanded(
                         child: TextField(
                           controller: _advanceController,
-                          decoration: InputDecoration(labelText: 'Advance Paid (OMR)', filled: true),
+                          decoration: InputDecoration(labelText: 'Advance Paid (OMR)', filled: true, fillColor: Colors.grey[100]),
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -255,19 +256,24 @@ class _UpdateStatusWebState extends State<UpdateStatusWeb> {
                   TextField(
                     controller: _noteController,
                     maxLines: 5,
-                    decoration: InputDecoration(labelText: 'Technician Note', filled: true),
+                    decoration: InputDecoration(labelText: 'Technician Note', filled: true, fillColor: Colors.grey[100]),
                   ),
                   const SizedBox(height: 30),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: loading ? null : _saveChanges,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 20)),
-                      child: loading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Save Changes', style: TextStyle(color: Colors.white, fontSize: 18)),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SizedBox(
+                        width: 200,
+                        child: ElevatedButton(
+                          onPressed: loading ? null : _saveChanges,
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade900, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),padding: const EdgeInsets.symmetric(vertical: 20)),
+                          child: loading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text('Save Changes', style: TextStyle(color: Colors.white, fontSize: 18)),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

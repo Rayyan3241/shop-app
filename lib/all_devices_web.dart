@@ -23,8 +23,7 @@ class AllDevicesWeb extends StatelessWidget {
             child: pw.Column(
               mainAxisAlignment: pw.MainAxisAlignment.center,
               children: [
-                pw.Text('RAYAN COMPUTERS', style: pw.TextStyle(fontSize: 36)),
-                pw.SizedBox(height: 30),
+                pw.SizedBox(height: 10),
                 pw.Text('+968 99636476', style: pw.TextStyle(fontSize: 28)),
                 pw.SizedBox(height: 5),
                 pw.Text('+968 96008824', style: pw.TextStyle(fontSize: 28)),
@@ -39,7 +38,7 @@ class AllDevicesWeb extends StatelessWidget {
                 pw.SizedBox(height: 60),
                 pw.Text('Phone Number: ${data['phone']}', style: pw.TextStyle(fontSize: 32)),
                 pw.SizedBox(height: 60),
-                pw.Text('Please keep this ticket ID safe', style: pw.TextStyle(fontSize: 22)),
+                pw.Text('Please keep this tracking ID safe', style: pw.TextStyle(fontSize: 22)),
               ],
             ),
           );
@@ -100,7 +99,7 @@ class AllDevicesWeb extends StatelessWidget {
                   boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 15)],
                 ),
                 child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                  scrollDirection: Axis.vertical,
                   child: DataTable(
                     columns: const [
                       DataColumn(label: Text('Tracking ID', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -122,7 +121,7 @@ class AllDevicesWeb extends StatelessWidget {
                         DataCell(Text(data['customerName'] ?? '-')),
                         DataCell(Text(data['device'] ?? '-')),
                         DataCell(Text(data['problem'] ?? '-')),
-                        DataCell(Chip(label: Text(data['status'] ?? 'Received'))),
+                        DataCell(Chip(label: Text(data['status'] ?? 'Received', style: TextStyle(color: Colors.white),), backgroundColor: Colors.blueGrey.shade900,)),
                         DataCell(Text('OMR ${data['expectedCost'] ?? 0}')),
                         DataCell(Text(dateStr)),
                         DataCell(

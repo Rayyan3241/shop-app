@@ -27,7 +27,50 @@ class _StaffChatPageState extends State<StaffChatPage> {
   @override
   void initState() {
     super.initState();
-    chatId = "${widget.ticketId}_${widget.phone}";
+    chatId = _computeChatId();
+    _markCustomerMessagesAsRead(); // 👈 mark as read when opened
+  }
+
+  @override
+  void didUpdateWidget(StaffChatPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.ticketId != widget.ticketId ||
+        oldWidget.phone != widget.phone) {
+      setState(() {
+        chatId = _computeChatId();
+      });
+      _markCustomerMessagesAsRead();
+    }
+  }
+
+  String _computeChatId() {
+    return "${widget.ticketId}_${widget.phone}";
+  }
+
+  Future<void> _markCustomerMessagesAsRead() async {
+    final query = await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .where('sender', isEqualTo: 'customer')
+        .where('readByStaff', isEqualTo: false)
+        .get();
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (var doc in query.docs) {
+      batch.update(doc.reference, {'readByStaff': true});
+    }
+
+    await batch.commit();
+
+    // Also clear unread flag at chat level for staff-view
+    await FirebaseFirestore.instance.collection('chats').doc(chatId).set(
+      {
+        'unreadForStaff': false,
+      },
+      SetOptions(merge: true),
+    );
   }
 
   void sendMessage() async {
@@ -35,6 +78,8 @@ class _StaffChatPageState extends State<StaffChatPage> {
 
     String text = _msg.text.trim();
     _msg.clear();
+
+    final now = Timestamp.now();
 
     // Add message to messages subcollection
     await FirebaseFirestore.instance
@@ -44,9 +89,10 @@ class _StaffChatPageState extends State<StaffChatPage> {
         .add({
       'text': text,
       'sender': 'staff',
-      'fromStaff': true,           // mark as from staff
-      'readByCustomer': false,     // customer hasn't read
-      'time': Timestamp.now(),
+      'fromStaff': true,
+      'readByCustomer': false,
+      'readByStaff': true, // staff has obviously "read" own message
+      'time': now,
     });
 
     // Update chat-level document
@@ -55,9 +101,9 @@ class _StaffChatPageState extends State<StaffChatPage> {
       'phone': widget.phone,
       'customerName': widget.customerName,
       'lastMessage': text,
-      'lastTime': Timestamp.now(),
+      'lastTime': now,
       'sender': 'staff',
-      'unreadForCustomer': true,   // triggers yellow dot on customer portal
+      'unreadForCustomer': true,
     }, SetOptions(merge: true));
 
     // Scroll to bottom
@@ -84,7 +130,7 @@ class _StaffChatPageState extends State<StaffChatPage> {
     return Scaffold(
       backgroundColor: const Color(0xffF5F5F5),
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.blueGrey.shade900,
         elevation: 2,
         title: Row(
           children: [
@@ -107,7 +153,8 @@ class _StaffChatPageState extends State<StaffChatPage> {
                 ),
                 Text(
                   'Ticket: ${widget.ticketId}',
-                  style: const TextStyle(fontSize: 14, color: Colors.white70),
+                  style:
+                  const TextStyle(fontSize: 14, color: Colors.white70),
                 ),
               ],
             ),
@@ -136,23 +183,27 @@ class _StaffChatPageState extends State<StaffChatPage> {
                   padding: const EdgeInsets.all(12),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    var data = messages[index].data() as Map<String, dynamic>;
+                    var data =
+                    messages[index].data() as Map<String, dynamic>;
                     bool isStaff = data['sender'] == 'staff';
                     String text = data['text'] ?? '';
                     Timestamp? time = data['time'];
                     String timeStr = time != null
-                        ? DateFormat('hh:mm a').format(time.toDate())
+                        ? DateFormat('h:mm a').format(time.toDate())
                         : '';
 
                     return Align(
-                      alignment:
-                      isStaff ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment: isStaff
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 6),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 18, vertical: 12),
                         decoration: BoxDecoration(
-                          color: isStaff ? Colors.black : Colors.white,
+                          color: isStaff
+                              ? Colors.blueGrey.shade900
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
@@ -162,7 +213,9 @@ class _StaffChatPageState extends State<StaffChatPage> {
                           ],
                         ),
                         constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.75),
+                          maxWidth:
+                          MediaQuery.of(context).size.width * 0.75,
+                        ),
                         child: Column(
                           crossAxisAlignment: isStaff
                               ? CrossAxisAlignment.end
@@ -171,17 +224,21 @@ class _StaffChatPageState extends State<StaffChatPage> {
                             Text(
                               text,
                               style: TextStyle(
-                                  color: isStaff ? Colors.white : Colors.black87,
-                                  fontSize: 16.5),
+                                color: isStaff
+                                    ? Colors.white
+                                    : Colors.black87,
+                                fontSize: 16.5,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               timeStr,
                               style: TextStyle(
-                                  color: isStaff
-                                      ? Colors.white70
-                                      : Colors.grey[600],
-                                  fontSize: 11),
+                                color: isStaff
+                                    ? Colors.white70
+                                    : Colors.grey[600],
+                                fontSize: 11,
+                              ),
                             ),
                           ],
                         ),
@@ -198,19 +255,13 @@ class _StaffChatPageState extends State<StaffChatPage> {
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 20),
             decoration: const BoxDecoration(
               color: Color(0xffF5F5F5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: Offset(0, -3),
-                )
-              ],
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 18),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(28),
@@ -241,8 +292,11 @@ class _StaffChatPageState extends State<StaffChatPage> {
                       color: Colors.black,
                       shape: BoxShape.circle,
                     ),
-                    child:
-                    const Icon(Icons.send, color: Colors.white, size: 22),
+                    child: const Icon(
+                      Icons.send,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                 )
               ],
